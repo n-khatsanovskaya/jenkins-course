@@ -4,41 +4,29 @@ node {
     def buildInfo = Artifactory.newBuildInfo()
 
     stage('Build') {
-        steps {
-            git url: 'https://github.com/n-khatsanovskaya/gs-gradle.git'
-        }
+        git url: 'https://github.com/n-khatsanovskaya/gs-gradle.git'
     }
 
     stage('Artifactory configuration') {
-        steps {
-            rtGradle.tool = 'gradle' // Tool name from Jenkins configuration
-            rtGradle.deployer repo: 'gradle-dev-local', server: server
-            rtGradle.resolver repo: 'gradle-dev', server: server
-        }
+        rtGradle.tool = 'gradle' // Tool name from Jenkins configuration
+        rtGradle.deployer repo: 'gradle-dev-local', server: server
+        rtGradle.resolver repo: 'gradle-dev', server: server
     }
 
     stage('Config Build Info') {
-        steps {
-            buildInfo.env.capture = true
-            buildInfo.env.filter.addInclude("*")
-        }
+        buildInfo.env.capture = true
+        buildInfo.env.filter.addInclude("*")
     }
 
     stage('Extra gradle configurations') {
-        steps {
-            rtGradle.usesPlugin = true // Artifactory plugin already defined in build script
-        }
+        rtGradle.usesPlugin = true // Artifactory plugin already defined in build script
     }
 
     stage('Exec Gradle') {
-        steps {
-            rtGradle.run rootDir: "artifactory/", buildFile: 'build.gradle', tasks: 'clean artifactoryPublish', buildInfo: buildInfo
-        }
+        rtGradle.run rootDir: "artifactory/", buildFile: 'build.gradle', tasks: 'clean artifactoryPublish', buildInfo: buildInfo
     }
 
     stage('Publish build info') {
-        steps {
-            server.publishBuildInfo buildInfo
-        }
+        server.publishBuildInfo buildInfo
     }
 }
